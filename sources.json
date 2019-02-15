@@ -1,0 +1,13 @@
+{
+	"huffingtonpost": {
+		"feeds": [
+			"https://www.huffingtonpost.es/feeds/index.xml"
+		],
+		"allowed_categories": [
+			"Internacional", 
+			"Noticias", 
+			"Política",
+			"Economía"
+		]
+	}
+}
