@@ -52,8 +52,10 @@ class ArticleScrapper:
         
             # Iterating through each feed_url
             for feed_url in source_data['feeds']:
-                feeds_xml = _requests.get(feed_url)
-                xml_tree = _ElementTree.fromstring(feeds_xml.text)
+                # feeds_xml = _requests.get(feed_url)
+                # xml_tree = _ElementTree.fromstring(feeds_xml.text)
+
+                xml_tree = _ElementTree.parse(feed_url)
                 
                 # TODO: Move this to an external function/class
                 # Huffington Post
