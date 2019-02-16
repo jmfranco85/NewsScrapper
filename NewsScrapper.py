@@ -33,6 +33,8 @@ if __name__ == "__main__":
     # Loading articles from the sources
     news_sources = _json.load(open('sources.json'))
     a_scraper.load_articles(news_sources)
+	
+	# Test conflict
 
     exit()
 
