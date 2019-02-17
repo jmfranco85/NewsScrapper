@@ -68,6 +68,8 @@ class Article:
         article_str += self.title + "\n"
         if self.content:
             article_str += self.content + "\n"
+        if self.nlp_clean_content:
+            article_str += "NLP Content: " + self.nlp_clean_content + "\n"
         article_str += "Fecha: " + str(self.date) + "\n"
         article_str += "Categorías: " + ', '.join(self.categories) + "\n"
         article_str += "Enlace: " + self.link + "\n"

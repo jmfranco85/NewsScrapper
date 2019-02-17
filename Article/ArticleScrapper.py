@@ -3,17 +3,25 @@
 #
 
 # https://realpython.com/python-requests/
-import requests as _requests
-import TextHelper.TextHelper as TextHelper
-from lxml import etree as ElemTree, html as LHtml
-from datetime import datetime as DateTime, timedelta as TimeDelta
-from Article.Article import Article
-from NLPHelper.NLPHelper import NLPHelper
-from builtins import int
-import operator as Operator
+import requests
 
 # https://docs.python.org/3.7/library/xml.etree.elementtree.html
-import xml.etree.ElementTree as _ElementTree
+from xml.etree import ElementTree
+
+# https://docs.python.org/3/library/datetime.html
+from datetime import datetime, timedelta
+
+# https://www.crummy.com/software/BeautifulSoup/
+from bs4 import BeautifulSoup
+
+# Internal
+import TextHelper.TextHelper as TextHelper
+from Article.Article import Article
+from NLPHelper.NLPHelper import NLPHelper
+
+
+from builtins import int
+import operator as Operator
 
 
 class ArticleScrapper:
@@ -52,120 +60,111 @@ class ArticleScrapper:
         
             # Iterating through each feed_url
             for feed_url in source_data['feeds']:
-                # feeds_xml = _requests.get(feed_url)
-                # xml_tree = _ElementTree.fromstring(feeds_xml.text)
-
-                xml_tree = _ElementTree.parse(feed_url)
+                feeds_xml = requests.get(feed_url)
+                xml_tree = ElementTree.fromstring(feeds_xml.text)
                 
                 # TODO: Move this to an external function/class
                 # Huffington Post
                 if source_key == 'huffingtonpost':
-                    print("Aqui 2")
                     feed_items = xml_tree.findall('.//channel/item')
                     
                     for item in feed_items:
                         # Check the date
-                        # article_date = DateTime.strptime(item.findall('pubDate/text()')[0], '%a, %d %b %Y %H:%M:%S %z').astimezone()
-                        # if (DateTime.now().astimezone() - article_date) > TimeDelta(days=1):
-                            # continue
-
-                        print("Aqui 3")
-                        
-                        # Check the categories
-                        article_categories = item.findall('category')
-                        for category in article_categories:
-                            print(category.text)
-
-                        exit()
-
-
-                        article_categories = item.xpath('category/text()')
-                        if not (set(source_data['allowed_categories']) & set(article_categories)):
+                        article_date = datetime.strptime(item.find('pubDate').text, '%a, %d %b %Y %H:%M:%S %z')
+                        if (datetime.now().astimezone() - article_date.astimezone()) > timedelta(days=1):
                             continue
 
-                        print("Aqui 4")
+                        # Check the categories
+                        article_categories = []
+                        for category in item.findall('category'):
+                            article_categories.append(category.text)
+
+                        if not (set(source_data['allowed_categories']) & set(article_categories)):
+                            continue
                         
                         # Adding the new article
                         self.add_article({
-                            'title': item.xpath('title/text()')[0],
-                            'content': TextHelper.clean_html(item.xpath('description/text()')[0]),
+                            'title': item.find('title').text,
+                            'content': TextHelper.clean_html(item.find('description').text),
                             'date': article_date,
                             'categories': article_categories,
-                            'link': item.xpath('link/text()')[0],
+                            'link': item.find('link').text,
                             'source': 'huffingtonpost',
                             'base_score': 1
                         })
                 
                 # Publico
                 elif source_key == 'publico':
-                    feed_items = xml_tree.xpath('//channel/item')
+                    feed_items = xml_tree.findall('.//channel/item')
                     
                     for item in feed_items:
                         # Check the date
-                        article_date = DateTime.strptime(item.xpath('pubDate/text()')[0], '%a, %d %b %Y %H:%M:%S %z').astimezone()
-                        if (DateTime.now().astimezone() - article_date) > TimeDelta(days=1):
+                        article_date = datetime.strptime(item.find('pubDate').text, '%a, %d %b %Y %H:%M:%S %z')
+                        if (datetime.now().astimezone() - article_date.astimezone()) > timedelta(days=1):
                             continue
                         
                         # Check the categories
-                        article_categories = item.xpath('category/text()')
+                        article_categories = []
+                        for category in item.findall('category'):
+                            article_categories.append(category.text)
+
                         if not (set(source_data['allowed_categories']) & set(article_categories)):
                             continue
                         
                         # To get the content, we need to follow the article link
-                        article_html_page = Requests.get(item.xpath('link/text()')[0])
-                        article_dom_tree = LHtml.fromstring(article_html_page.content)
-                        article_raw_content = article_dom_tree.xpath('//div[contains(@class, "article-text")]')[0]
-                        article_html_content = ElemTree.tostring(article_raw_content).decode('utf-8')
+                        article_raw_html = requests.get(item.find('link').text)
+                        article_html_handler = BeautifulSoup(article_raw_html.text, 'html.parser')
+                        article_html_content = article_html_handler.select('div.article-text')[0].text
                         
                         # Adding the new article
                         self.add_article({
-                            'title': item.xpath('title/text()')[0],
-                            'subtitle': TextHelper.clean_html(item.xpath('description/text()')[0]),
+                            'title': item.find('title').text,
+                            'subtitle': TextHelper.clean_html(item.find('description').text),
                             'content': TextHelper.clean_html(article_html_content),
                             'date': article_date,
                             'categories': article_categories,
-                            'link': item.xpath('link/text()')[0],
+                            'link': item.find('link').text,
                             'source': 'publico',
                             'base_score': 1
                         })
                             
                 # El Pais
                 elif source_key == 'elpais':
-                    feed_items = xml_tree.xpath('//channel/item')
+                    feed_items = xml_tree.findall('.//channel/item')
                     
                     for item in feed_items:
                         # Check the date
-                        # Tue, 20 Jun 2017 14:16:41 +0200
-                        article_date = DateTime.strptime(item.xpath('pubDate/text()')[0], '%a, %d %b %Y %H:%M:%S %z').astimezone()
-                        if (DateTime.now().astimezone() - article_date) > TimeDelta(days=1):
+                        article_date = datetime.strptime(item.find('pubDate').text, '%a, %d %b %Y %H:%M:%S %z')
+                        if (datetime.now().astimezone() - article_date.astimezone()) > timedelta(days=1):
                             continue
-                    
+
                         # Check the categories
-                        article_categories = item.xpath('category/text()')
+                        article_categories = []
+                        for category in item.findall('category'):
+                            article_categories.append(category.text)
+
                         if not (set(source_data['allowed_categories']) & set(article_categories)):
                             continue
-                        
+
                         # To get the content, we need to follow the article link
-                        article_html_page = Requests.get(item.xpath('link/text()')[0])
-                        article_dom_tree = LHtml.fromstring(article_html_page.content)
-                        article_raw_content = article_dom_tree.xpath('//div[contains(@class, "articulo-cuerpo")]')
-                        if article_raw_content:
-                            article_raw_content = article_raw_content[0]
-                            for extra_content in article_raw_content.xpath('//section[contains(@class, "sumario_apoyos")]'):
-                                extra_content.getparent().remove(extra_content)
-        
-                            article_html_content = ElemTree.tostring(article_raw_content).decode('utf-8')
+                        article_raw_html = requests.get(item.find('link').text)
+                        article_html_handler = BeautifulSoup(article_raw_html.text, 'html.parser')
+
+                        if article_html_handler.select('div.articulo-cuerpo'):
+                            article_raw_content_handler = article_html_handler.select('div.articulo-cuerpo')[0]
+                            [elem.extract() for elem in article_raw_content_handler.select("section.sumario_apoyos")]
+                            article_html_content = article_raw_content_handler.text
                         else:
-                            article_html_content = item.xpath('description/text()')[0]
+                            article_html_content = item.find('description').text
                             
                         # Adding the new article
                         self.add_article({
-                            'title': item.xpath('title/text()')[0],
-                            'subtitle': TextHelper.clean_html(item.xpath('description/text()')[0]),
+                            'title': item.find('title').text,
+                            'subtitle': TextHelper.clean_html(item.find('description').text),
                             'content': TextHelper.clean_html(article_html_content),
                             'date': article_date,
                             'categories': article_categories,
-                            'link': item.xpath('link/text()')[0],
+                            'link': item.find('link').text,
                             'source': 'elpais',
                             'base_score': 1
                         })
@@ -232,10 +231,10 @@ class ArticleScrapper:
     def print_article(self, article_id):
         article_id = int(article_id)
         
-        if not article_id in list(self.article_list.keys()):
+        if article_id not in list(self.article_list.keys()):
             return False
         
         return self.article_list[article_id].print()
 
     def get_articles(self):
-        return self.article_listload_articles
+        return self.article_list.load_articles

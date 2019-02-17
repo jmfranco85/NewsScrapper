@@ -1,13 +1,18 @@
 {
-	"huffingtonpost": {
+	"elpais": {
 		"feeds": [
-			"https://www.huffingtonpost.es/feeds/index.xml"
+			"http://ep00.epimg.net/rss/economia/portada.xml"
 		],
 		"allowed_categories": [
-			"Internacional", 
-			"Noticias", 
 			"Política",
-			"Economía"
+			"Economía",
+			"Internacional",
+			"Sociedad",
+			"España",
+			"Deportes",
+			"Ciencia",
+			"Tecnología",
+			"Cultura"
 		]
 	}
 }

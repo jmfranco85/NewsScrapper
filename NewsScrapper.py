@@ -13,7 +13,7 @@ Next steps:
 """
 
 from Article.ArticleScrapper import ArticleScrapper
-import json as _json
+import json
 
 final_list_of_news = {}
 
@@ -31,10 +31,8 @@ if __name__ == "__main__":
     a_scraper = ArticleScrapper()
 
     # Loading articles from the sources
-    news_sources = _json.load(open('sources.json'))
+    news_sources = json.load(open('sources.json', encoding='utf-8'))
     a_scraper.load_articles(news_sources)
-
-    exit()
 
     # Calculating the similarity scores
     a_scraper.calculate_similarity()
