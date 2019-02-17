@@ -21,6 +21,7 @@ from bs4 import BeautifulSoup
 import TextHelper.TextHelper as TextHelper
 from Article.Article import Article
 from NLPHelper.NLPHelper import NLPHelper
+from Debugger.Debugger import Debugger
 
 # Other
 from builtins import int
@@ -34,6 +35,7 @@ class ArticleScrapper:
         self.article_list = {}
         self.similarity_matrix = {}
         self.nlp_helper = NLPHelper()
+        self.debugger = Debugger(1)
 
     def add_article(self, article_information):
         # Checking whether the article already exists
@@ -48,13 +50,16 @@ class ArticleScrapper:
         
         if self.nlp_helper and 'content' in article_information:
             article_information['nlp_clean_content'] = self.nlp_helper.clean_raw_text(article_information['content'])
-        
+
+        self.debugger.debug('Adding article "' + article_information['title'] + '" to list')
+
         self.article_list[self.number_of_articles] = Article(article_information)
         self.number_of_articles = self.number_of_articles + 1
         
         return
 
     def load_articles(self, sources_information):
+        self.debugger.debug('Entering load_articles')
         self.sources_information = sources_information
         
         # Iterating through each feed source
@@ -62,6 +67,7 @@ class ArticleScrapper:
 
             # Iterating through each feed_url
             for feed_url in source_data['feeds']:
+                self.debugger.debug('Loading "' + source_key + '" articles from ' + feed_url)
                 feeds_xml = requests.get(feed_url)
                 xml_tree = ElementTree.fromstring(feeds_xml.text)
                 
@@ -69,8 +75,10 @@ class ArticleScrapper:
                 # Huffington Post
                 if source_key == 'huffingtonpost':
                     feed_items = xml_tree.findall('.//channel/item')
-                    
+
                     for item in feed_items:
+                        self.debugger.debug('Found article "' + item.find('title').text + '"')
+
                         # Check the date
                         article_date = datetime.strptime(item.find('pubDate').text, '%a, %d %b %Y %H:%M:%S %z')
                         if (datetime.now().astimezone() - article_date.astimezone()) > timedelta(days=1):
@@ -100,6 +108,8 @@ class ArticleScrapper:
                     feed_items = xml_tree.findall('.//channel/item')
                     
                     for item in feed_items:
+                        self.debugger.debug('Found article "' + item.find('title').text + '"')
+
                         # Check the date
                         article_date = datetime.strptime(item.find('pubDate').text, '%a, %d %b %Y %H:%M:%S %z')
                         if (datetime.now().astimezone() - article_date.astimezone()) > timedelta(days=1):
@@ -135,6 +145,8 @@ class ArticleScrapper:
                     feed_items = xml_tree.findall('.//channel/item')
                     
                     for item in feed_items:
+                        self.debugger.debug('Found article "' + item.find('title').text + '"')
+
                         # Check the date
                         article_date = datetime.strptime(item.find('pubDate').text, '%a, %d %b %Y %H:%M:%S %z')
                         if (datetime.now().astimezone() - article_date.astimezone()) > timedelta(days=1):
@@ -173,6 +185,8 @@ class ArticleScrapper:
         return
     
     def calculate_similarity(self):
+        self.debugger.debug('Calculating the similarity matrix')
+
         if not self.article_list: 
             return False
         
@@ -227,9 +241,13 @@ class ArticleScrapper:
                     self.similarity_matrix[other_news_article_id][news_article_id] = similarity_score
                     news_article.add_similarity_score(similarity_score * -1)
                     other_news_article.add_similarity_score(similarity_score)
-                
-                # Debugging
-                # print ("Score article " + news_article_id + " - " + other_news_article_id + " => " + str(self.similarity_matrix[news_article_id][other_news_article_id]))
+
+                self.debugger.debug(
+                    'Score article ' +
+                    news_article_id + ' - ' + other_news_article_id + ' => ' +
+                    str(similarity_score)
+                )
+
         return self.similarity_matrix
 
     def get_sorted_articles(self, limit=10):

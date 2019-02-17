@@ -9,5 +9,51 @@
 			"Política",
 			"Economía"
 		]
+	},
+
+	"publico": {
+		"feeds": [
+			"https://www.publico.es/rss/politica",
+			"https://www.publico.es/rss/espana",
+			"https://www.publico.es/rss/economia",
+			"https://www.publico.es/rss/internacional",
+			"https://www.publico.es/rss/sociedad",
+			"https://www.publico.es/rss/actualidad",
+			"https://www.publico.es/rss/deportes"
+		],
+		"allowed_categories": [
+			"Política",
+			"Economía",
+			"Internacional",
+			"Sociedad",
+			"Actualidad",
+			"España",
+			"Deportes"
+		]
+	},
+
+	"elpais": {
+		"feeds": [
+			"https://ep00.epimg.net/rss/economia/portada.xml",
+			"https://ep00.epimg.net/rss/elpais/ciencia.xml",
+			"https://ep00.epimg.net/rss/tecnologia/portada.xml",
+			"https://ep00.epimg.net/rss/cultura/portada.xml",
+			"https://ep00.epimg.net/rss/deportes/portada.xml",
+			"https://ep00.epimg.net/rss/sociedad/portada.xml",
+			"https://ep00.epimg.net/rss/politica/portada.xml",
+			"https://ep00.epimg.net/rss/elpais/portada.xml",
+			"https://ep00.epimg.net/rss/internacional/portada.xml"
+		],
+		"allowed_categories": [
+			"Política",
+			"Economía",
+			"Internacional",
+			"Sociedad",
+			"España",
+			"Deportes",
+			"Ciencia",
+			"Tecnología",
+			"Cultura"
+		]
 	}
 }
