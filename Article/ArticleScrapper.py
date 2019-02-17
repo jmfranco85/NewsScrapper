@@ -2,14 +2,17 @@
 # Package ArticleScraper
 #
 
-# https://realpython.com/python-requests/
-import requests
-
 # https://docs.python.org/3.7/library/xml.etree.elementtree.html
 from xml.etree import ElementTree
 
 # https://docs.python.org/3/library/datetime.html
 from datetime import datetime, timedelta
+
+# https://docs.python.org/3/library/operator.html
+import operator
+
+# https://realpython.com/python-requests/
+import requests
 
 # https://www.crummy.com/software/BeautifulSoup/
 from bs4 import BeautifulSoup
@@ -19,9 +22,8 @@ import TextHelper.TextHelper as TextHelper
 from Article.Article import Article
 from NLPHelper.NLPHelper import NLPHelper
 
-
+# Other
 from builtins import int
-import operator as Operator
 
 
 class ArticleScrapper:
@@ -57,7 +59,7 @@ class ArticleScrapper:
         
         # Iterating through each feed source
         for source_key, source_data in self.sources_information.items():
-        
+
             # Iterating through each feed_url
             for feed_url in source_data['feeds']:
                 feeds_xml = requests.get(feed_url)
@@ -186,8 +188,15 @@ class ArticleScrapper:
                     continue
                 
                 if (
-                    (news_article_id in self.similarity_matrix and other_news_article_id in self.similarity_matrix[news_article_id])
-                    or (other_news_article_id in self.similarity_matrix and news_article_id in self.similarity_matrix[other_news_article_id])
+                    (
+                        news_article_id in self.similarity_matrix and
+                        other_news_article_id in self.similarity_matrix[news_article_id]
+                    )
+                    or
+                    (
+                        other_news_article_id in self.similarity_matrix and
+                        news_article_id in self.similarity_matrix[other_news_article_id]
+                    )
                 ):
                     continue
                 
@@ -199,9 +208,15 @@ class ArticleScrapper:
                     
                 news_article_clean_content = news_article.get_clean_content()
                 other_news_article_clean_content = other_news_article.get_clean_content()
-                similarity_score = self.nlp_helper.calculate_similarity_score(news_article_clean_content, other_news_article_clean_content) * 100
+                similarity_score = self.nlp_helper.calculate_similarity_score(
+                    news_article_clean_content,
+                    other_news_article_clean_content
+                ) * 100
                 
-                if self.nlp_helper.get_text_richness(news_article_clean_content) >= self.nlp_helper.get_text_richness(other_news_article_clean_content) :
+                if (
+                    self.nlp_helper.get_text_richness(news_article_clean_content) >=
+                    self.nlp_helper.get_text_richness(other_news_article_clean_content)
+                ):
                     self.similarity_matrix[news_article_id][other_news_article_id] = similarity_score
                     self.similarity_matrix[other_news_article_id][news_article_id] = (similarity_score * -1)
                     news_article.add_similarity_score(similarity_score)
@@ -225,7 +240,7 @@ class ArticleScrapper:
         for article_id, article in self.article_list.items():
             sorted_articles[article_id] = article.get_score()
             
-        sorted_articles = sorted(sorted_articles.items(), key=Operator.itemgetter(1), reverse=True)
+        sorted_articles = sorted(sorted_articles.items(), key=operator.itemgetter(1), reverse=True)
         return sorted_articles[:limit]
 
     def print_article(self, article_id):

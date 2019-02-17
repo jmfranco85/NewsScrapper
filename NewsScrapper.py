@@ -4,6 +4,9 @@
 
 """
 Next steps:
+    - Remove stop words and stems from article contents in method clean_raw_text
+    - Create debugging system for scrapping and calculating the similarity score
+
     - Every article must have a score calculated when adding a new Article to the ArticleScraper
     - Feed sources must be different classes as per the source
     - Add new languages to the NLP Helpers
